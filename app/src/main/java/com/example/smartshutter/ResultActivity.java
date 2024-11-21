@@ -1,9 +1,12 @@
 package com.example.smartshutter;
 
+import android.app.Dialog;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ResultActivity extends AppCompatActivity {
@@ -24,9 +28,11 @@ public class ResultActivity extends AppCompatActivity {
 
     private ImageSearchManager imageSearchManager;
 
-    private boolean isSnackbarShown = false; // Snackbar가 이미 표시되었는지 확인
+    private boolean isSnackbarShown = false; // Snackbar 표시 여부 확인
     private int totalScrollDistance = 0; // 스크롤 거리 추적
     private int scrollEventCount = 0; // 스크롤 이벤트 횟수 추적
+
+    private List<ResultItem> resultItems; // 검색 결과 저장 리스트
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +45,11 @@ public class ResultActivity extends AppCompatActivity {
         captureButton = findViewById(R.id.captureButton);
 
         resultsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        if (resultsRecyclerView.getAdapter() == null) {
+            resultsRecyclerView.setAdapter(new ResultAdapter(new ArrayList<>())); // 빈 어댑터 설정
+        }
+
+        resultItems = new ArrayList<>(); // 검색 결과 리스트 초기화
 
         // 사진 경로 확인
         String photoPath = getIntent().getStringExtra("photoPath");
@@ -46,7 +57,7 @@ public class ResultActivity extends AppCompatActivity {
             File imageFile = new File(photoPath); // String을 File 객체로 변환
             if (imageFile.exists()) {
                 Log.d("ResultActivity", "Image file exists: " + photoPath);
-                loadResults(imageFile); // File 객체 전달
+                loadResults(imageFile); // 검색 결과 로드
             } else {
                 Log.e("ResultActivity", "Image file does not exist: " + photoPath);
                 showLoading(false);
@@ -59,9 +70,7 @@ public class ResultActivity extends AppCompatActivity {
         }
 
         // 다시 촬영 버튼
-        captureButton.setOnClickListener(v -> {
-            finish(); // 현재 액티비티 종료
-        });
+        captureButton.setOnClickListener(v -> finish());
 
         // RecyclerView 스크롤 리스너 추가
         resultsRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -79,6 +88,20 @@ public class ResultActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // RecyclerView 항목 클릭 리스너 설정
+        resultsRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(this, resultsRecyclerView,
+                new RecyclerItemClickListener.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        showImageDialog(resultItems.get(position)); // 클릭한 항목의 이미지를 다이얼로그로 표시
+                    }
+
+                    @Override
+                    public void onLongItemClick(View view, int position) {
+                        // 필요 시 장기 클릭 처리
+                    }
+                }));
     }
 
     private void loadResults(File imageFile) {
@@ -87,22 +110,26 @@ public class ResultActivity extends AppCompatActivity {
         // ImageSearchManager를 통해 검색 결과 가져오기
         imageSearchManager = new ImageSearchManager(this);
 
-        imageSearchManager.searchGoogleImages(imageFile)
-                .observe(this, resultItems -> {
-                    if (resultItems != null && !resultItems.isEmpty()) {
-                        updateRecyclerView(resultItems);
-                    } else {
-                        showSnackbarError("검색 결과가 없습니다.");
+        imageSearchManager.analyzeImage(imageFile).observe(this, new Observer<List<String>>() {
+            @Override
+            public void onChanged(List<String> labels) {
+                if (labels != null && !labels.isEmpty()) {
+                    resultItems.clear();
+                    for (String label : labels) {
+                        resultItems.add(new ResultItem(label, "Description", android.R.drawable.ic_menu_search)); // 각 라벨에 대한 검색 결과 아이템 추가
                     }
-                    showLoading(false);
-                });
+                    updateRecyclerView(resultItems);
+                } else {
+                    showSnackbarError("검색 결과가 없습니다.");
+                }
+                showLoading(false);
+            }
+        });
     }
 
     private void showSnackbar() {
         Snackbar.make(resultsRecyclerView, "텍스트 검색 결과 보기를 사용해보세요!", Snackbar.LENGTH_INDEFINITE)
-                .setAction("열기", v -> {
-                    Log.d("ResultActivity", "Text Search is selected");
-                })
+                .setAction("열기", v -> Log.d("ResultActivity", "Text Search is selected"))
                 .show();
     }
 
@@ -116,7 +143,29 @@ public class ResultActivity extends AppCompatActivity {
     }
 
     private void updateRecyclerView(List<ResultItem> results) {
+        if (results == null || results.isEmpty()) {
+            results = new ArrayList<>(); // 빈 리스트로 초기화
+            showSnackbarError("검색 결과가 없습니다."); // 에러 메시지 표시
+        }
         ResultAdapter adapter = new ResultAdapter(results);
         resultsRecyclerView.setAdapter(adapter);
+    }
+
+    // 이미지를 Dialog로 표시
+    private void showImageDialog(ResultItem item) {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_image_view);
+
+        ImageView imageView = dialog.findViewById(R.id.dialog_image_view);
+
+        // 결과 항목에서 Bitmap 가져와 설정
+        Bitmap bitmap = item.getBitmap();
+        if (bitmap != null) {
+            imageView.setImageBitmap(bitmap);
+        } else {
+            imageView.setImageResource(android.R.drawable.ic_menu_gallery); // 기본 이미지 설정
+        }
+
+        dialog.show();
     }
 }

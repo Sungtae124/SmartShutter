@@ -54,6 +54,8 @@ public class SecretsManager {
         } catch (IOException e) {
             Log.e(TAG, "Failed to load secrets from " + SECRETS_FILE, e);
         }
+        Log.d("SecretsManager", "Vision API Key: " + SecretsManager.getSecret("VISION_API_KEY"));
+
     }
 
     /**
