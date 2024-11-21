@@ -19,6 +19,7 @@ import com.caverock.androidsvg.SVG;
 
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
@@ -37,6 +38,7 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
         return new ResultViewHolder(view);
     }
 
+/*
     @Override
     public void onBindViewHolder(@NonNull ResultViewHolder holder, int position) {
         ResultItem item = resultItems.get(position);
@@ -66,8 +68,35 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
             // URL이 없는 경우 기본 이미지 표시
             holder.imageView.setImageResource(android.R.drawable.ic_delete);
         }
+    }*/
+
+    @Override
+    public void onBindViewHolder(@NonNull ResultViewHolder holder, int position) {
+        ResultItem item = resultItems.get(position);
+        holder.descriptionTextView.setText(item.getDescription());
+        holder.engineIconImageView.setImageResource(item.getEngineIcon());
+
+        // 이미지 URL이 유효한지 검사하고, 유효할 경우만 Glide로 로드
+        if (isValidImageUrl(item.getImageUrl())) {
+            Glide.with(holder.imageView.getContext())
+                    .load(item.getImageUrl()) // 이미지 URL 로드
+                    .placeholder(android.R.drawable.ic_menu_gallery) // 기본 로딩 이미지
+                    .error(android.R.drawable.ic_menu_report_image) // 오류 발생 시 기본 이미지
+                    .into(holder.imageView);
+        } else {
+            holder.imageView.setImageResource(android.R.drawable.ic_menu_report_image); // 기본 이미지 설정
+        }
     }
 
+    private boolean isValidImageUrl(String url) {
+        try {
+            new URL(url);  // URL이 유효한지 확인
+            return true;
+        } catch (MalformedURLException e) {
+            Log.e("Image URL Error", "Invalid URL: " + url);
+            return false;
+        }
+    }
 
     @Override
     public int getItemCount() {
@@ -89,6 +118,12 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
 
     private Bitmap loadSvgToBitmap(String url, int width, int height) {
         try {
+            // URL이 유효한지 검사
+            if (url == null || !url.startsWith("http://") && !url.startsWith("https://")) {
+                Log.e("ResultAdapter", "Invalid URL: " + url);
+                return null; // 잘못된 URL은 처리하지 않음
+            }
+
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setDoInput(true);
             connection.connect();
@@ -103,7 +138,10 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
             return bitmap;
         } catch (Exception e) {
             Log.e("ResultAdapter", "Error loading SVG", e);
-            return null;
+            return null; // 오류 발생 시 null 반환
         }
     }
+
+
+
 }

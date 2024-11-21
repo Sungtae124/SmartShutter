@@ -6,7 +6,7 @@ import retrofit2.http.Query;
 
 public interface GoogleImageSearchApi {
     @GET("customsearch/v1")
-    Call<GoogleImageSearchResponse> searchImages(
+    Call<GoogleImageSearchResponse> searchImage(
             @Query("key") String apiKey,
             @Query("cx") String searchEngineId,
             @Query("q") String query,
