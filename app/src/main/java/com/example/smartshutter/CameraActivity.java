@@ -49,30 +49,54 @@ public class CameraActivity extends AppCompatActivity {
         findViewById(R.id.captureButton).setOnClickListener(v -> takePhoto());
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 101) { // CAMERA 권한 요청 코드
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // 권한이 허용된 경우
+                startCamera();
+            } else {
+                // 권한이 거부된 경우
+                Toast.makeText(this, "카메라 권한이 필요합니다.", Toast.LENGTH_SHORT).show();
+                finish(); // 권한 거부 시 앱 종료
+            }
+        }
+    }
+
     private void startCamera() {
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
         cameraProviderFuture.addListener(() -> {
             try {
+                // CameraProvider 초기화
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                 PreviewView previewView = findViewById(R.id.previewView);
 
+                // Preview 설정
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
+                // ImageCapture 설정
                 imageCapture = new ImageCapture.Builder().build();
 
+                // 후면 카메라 선택
                 CameraSelector cameraSelector = new CameraSelector.Builder()
                         .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                         .build();
 
+                // 카메라와 Lifecycle 바인딩
                 cameraProvider.unbindAll();
                 cameraProvider.bindToLifecycle(this, cameraSelector, preview, imageCapture);
+
+                Log.d("CameraX", "Camera initialized successfully");
             } catch (Exception e) {
                 Log.e("CameraX", "카메라 초기화 실패", e);
             }
         }, ContextCompat.getMainExecutor(this));
     }
+
 
     private void takePhoto() {
         // 유니크 파일 이름 생성
