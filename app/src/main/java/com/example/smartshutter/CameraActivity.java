@@ -108,14 +108,16 @@ public class CameraActivity extends AppCompatActivity {
         imageCapture.takePicture(options, cameraExecutor, new ImageCapture.OnImageSavedCallback() {
             @Override
             public void onImageSaved(ImageCapture.OutputFileResults output) {
-                // 사진 촬영 성공
-                runOnUiThread(() -> Toast.makeText(CameraActivity.this, "사진 저장 성공: " + fileName, Toast.LENGTH_SHORT).show());
-
-                // ResultActivity로 전환
-                Intent intent = new Intent(CameraActivity.this, ResultActivity.class);
-                intent.putExtra("photoPath", photoFile.getAbsolutePath());
-                startActivity(intent);
-                finish();
+                runOnUiThread(() -> {
+                    Toast.makeText(CameraActivity.this, "사진 저장 성공: " + fileName, Toast.LENGTH_SHORT).show();
+                    releaseCameraResources(() -> {
+                        // ResultActivity로 전환
+                        Intent intent = new Intent(CameraActivity.this, ResultActivity.class);
+                        intent.putExtra("photoPath", photoFile.getAbsolutePath());
+                        startActivity(intent);
+                        finish();
+                    });
+                });
             }
 
             @Override
@@ -125,6 +127,23 @@ public class CameraActivity extends AppCompatActivity {
                 Log.e("CameraX", "사진 촬영 실패", error);
             }
         });
+    }
+
+    private void releaseCameraResources(Runnable onReleaseComplete) {
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+
+        cameraProviderFuture.addListener(() -> {
+            try {
+                ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                cameraProvider.unbindAll();
+                Log.d("CameraX", "카메라 리소스 해제 완료");
+                if (onReleaseComplete != null) {
+                    onReleaseComplete.run();
+                }
+            } catch (Exception e) {
+                Log.e("CameraX", "카메라 리소스 해제 실패", e);
+            }
+        }, ContextCompat.getMainExecutor(this));
     }
 
     private String generateUniqueFileName() {

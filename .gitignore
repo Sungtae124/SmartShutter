@@ -3,7 +3,7 @@
 build/
 
 # Secrets directory
-/secrets/
+/app/src/main/assets/secrets/
 
 # Local configuration file (sdk path, etc)
 local.properties
