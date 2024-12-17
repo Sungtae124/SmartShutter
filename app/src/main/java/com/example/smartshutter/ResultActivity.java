@@ -102,6 +102,7 @@ public class ResultActivity extends AppCompatActivity {
         imageSearchManager = new ImageSearchManager(this);
 
         // 이미지 분석 후 검색 결과를 가져오기
+
         imageSearchManager.analyzeImage(imageFile).observe(this, new Observer<List<ResultItem>>() {
             @Override
             public void onChanged(List<ResultItem> items) {
