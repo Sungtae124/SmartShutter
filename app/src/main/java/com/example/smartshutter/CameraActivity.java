@@ -99,9 +99,12 @@ public class CameraActivity extends AppCompatActivity {
 
 
     private void takePhoto() {
+        Log.d("CameraActivity", "takePhoto() called");
         // 유니크 파일 이름 생성
         String fileName = generateUniqueFileName();
         File photoFile = new File(getExternalFilesDir(null), fileName);
+
+        Log.d("CameraActivity", "Photo will be saved at: " + photoFile.getAbsolutePath());
 
         ImageCapture.OutputFileOptions options = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
 
@@ -111,6 +114,7 @@ public class CameraActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     Toast.makeText(CameraActivity.this, "사진 저장 성공: " + fileName, Toast.LENGTH_SHORT).show();
                     releaseCameraResources(() -> {
+                        Log.d("CameraActivity", "Photo saved successfully: " + photoFile.getAbsolutePath());
                         // ResultActivity로 전환
                         Intent intent = new Intent(CameraActivity.this, ResultActivity.class);
                         intent.putExtra("photoPath", photoFile.getAbsolutePath());

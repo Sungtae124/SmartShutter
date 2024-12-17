@@ -38,38 +38,6 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
         return new ResultViewHolder(view);
     }
 
-/*
-    @Override
-    public void onBindViewHolder(@NonNull ResultViewHolder holder, int position) {
-        ResultItem item = resultItems.get(position);
-        holder.descriptionTextView.setText(item.getDescription());
-        holder.engineIconImageView.setImageResource(item.getEngineIcon());
-
-        // 이미지 로드
-        if (item.getImageUrl() != null) {
-            if (item.getImageUrl().endsWith(".svg")) {
-                // SVG 파일 처리
-                GlideApp.with(holder.imageView.getContext())
-                        .as(PictureDrawable.class) // SVG를 PictureDrawable로 처리
-                        .placeholder(android.R.drawable.ic_menu_gallery) // 로딩 중 표시할 이미지
-                        .error(android.R.drawable.ic_delete) // 실패 시 표시할 이미지
-                        .listener(new SvgSoftwareLayerSetter()) // SVG 처리 Listener
-                        .load(item.getImageUrl())
-                        .into(holder.imageView);
-            } else {
-                // 일반 이미지 처리 (JPG, PNG, WEBP 등)
-                GlideApp.with(holder.imageView.getContext())
-                        .load(item.getImageUrl())
-                        .placeholder(android.R.drawable.ic_menu_gallery) // 로딩 중 표시할 이미지
-                        .error(android.R.drawable.ic_delete) // 실패 시 표시할 이미지
-                        .into(holder.imageView);
-            }
-        } else {
-            // URL이 없는 경우 기본 이미지 표시
-            holder.imageView.setImageResource(android.R.drawable.ic_delete);
-        }
-    }*/
-
     @Override
     public void onBindViewHolder(@NonNull ResultViewHolder holder, int position) {
         ResultItem item = resultItems.get(position);
@@ -77,7 +45,7 @@ public class ResultAdapter extends RecyclerView.Adapter<ResultAdapter.ResultView
         holder.engineIconImageView.setImageResource(item.getEngineIcon());
 
         // 이미지 URL이 유효한지 검사하고, 유효할 경우만 Glide로 로드
-        if (isValidImageUrl(item.getImageUrl())) {
+        if (isValidImageUrl(item.getImageUrl()) && !item.getImageUrl().isEmpty()) {
             Glide.with(holder.imageView.getContext())
                     .load(item.getImageUrl()) // 이미지 URL 로드
                     .placeholder(android.R.drawable.ic_menu_gallery) // 기본 로딩 이미지

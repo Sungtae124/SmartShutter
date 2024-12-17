@@ -7,6 +7,6 @@ public class GoogleImageSearchResponse {
 
     public static class Item {
         public String link; // 이미지 URL
-        public String title; // 이미지 제목
+        //public String title; // 이미지 제목
     }
 }
