@@ -22,17 +22,24 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
+
     buildFeatures {
         viewBinding true
+        dataBinding true
+    }
+
+    // 중복된 META-INF 파일 문제 해결
+    packagingOptions {
+        excludes += ['META-INF/DEPENDENCIES', 'META-INF/INDEX.LIST', 'META-INF/LICENSE', 'META-INF/LICENSE.txt', 'META-INF/NOTICE', 'META-INF/NOTICE.txt']
     }
 }
 
 dependencies {
-
     implementation libs.appcompat
     implementation libs.material
     implementation libs.activity
@@ -48,8 +55,16 @@ dependencies {
     // (선택) 확장 기능 추가
     implementation "androidx.camera:camera-extensions:${camerax_version}"
 
+
     implementation "com.github.bumptech.glide:glide:4.15.1"
     annotationProcessor "com.github.bumptech.glide:compiler:4.15.1"
+    implementation 'com.caverock:androidsvg:1.4'
+
+    implementation "com.squareup.retrofit2:retrofit:2.9.0"
+    implementation "com.squareup.retrofit2:converter-gson:2.9.0"
+
+    // Google Cloud Vision 라이브러리 추가
+    implementation 'com.google.cloud:google-cloud-vision:3.50.0'
 
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
