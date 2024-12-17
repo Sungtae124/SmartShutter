@@ -9,32 +9,37 @@ public class VisionApiResponse {
         public float score;
     }
 
-    // Web Detection 결과 구조 추가
     public static class WebDetection {
         public static class WebEntity {
             public String entityId;
             public float score;
             public String description;
         }
-
         public static class WebImage {
             public String url;
             public float score;
         }
-
-        // 웹 엔티티 목록 (주요 키워드 정보)
         public List<WebEntity> webEntities;
-        // 완전히 일치하는 이미지
         public List<WebImage> fullMatchingImages;
-        // 부분적으로 일치하는 이미지
         public List<WebImage> partialMatchingImages;
-        // 페이지 정보, etc. 필요하면 추가 가능
-        // public List<PagesWithMatchingImages> pagesWithMatchingImages; // 필요시 정의
+    }
+
+    // 로고 인식 결과 추가
+    public static class LogoAnnotation {
+        public String description; // 로고 명(브랜드명)
+        public float score;
+    }
+
+    // 텍스트 인식 결과 추가 (단순 OCR 결과)
+    public static class TextAnnotation {
+        public String description; // 인식된 전체 텍스트
     }
 
     public static class Response {
         public List<LabelAnnotation> labelAnnotations;
-        public WebDetection webDetection; // 새로 추가한 필드
+        public WebDetection webDetection;
+        public List<LogoAnnotation> logoAnnotations; // 로고 결과
+        public List<TextAnnotation> textAnnotations; // 텍스트 결과 (첫 번째 항목이 전체 텍스트일 수도 있음)
     }
 
     public List<Response> responses;
