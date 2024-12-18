@@ -35,9 +35,9 @@ SmartShutter는 셔터를 누르는 순간, 원하는 정보를 즉시 찾아주
 
 1. **CameraX**를 이용한 **사진 촬영**
 2. 촬영된 이미지를 내부 저장소에 저장 
-3. **Google Vision API**에 이미지 전달 → 텍스트, 라벨, 로고 분석
-4. 분석된 결과를 **데이터 필터링** 및 병합
-5. 생성된 키워드 기반으로 외부 검색 **API 쿼리** 생성 및 결과 반환
+3. **Google Vision API**에 이미지 전달 → 텍스트, 라벨, 로고 분석 (https://cloud.google.com/vision)
+4. 분석된 결과를 **데이터 필터링** 및 병합 (https://developers.google.com/knowledge-graph?hl=ko)
+5. 생성된 키워드 기반으로 외부 검색 **API 쿼리** 생성 및 결과 반환 (https://developers.google.com/custom-search/v1/overview?hl=ko)
 ---
 
 ## **3. 구현 현황**
